@@ -38,22 +38,17 @@ class Director():
         # print some information
         self.print_devices_information()
 
-        # initialise figure
-        self.initialise_plot()
-
 
     def initialise_plot(self):
         """Create figure object used in results visualization."""
 
-        if self.args['plot']:
-            self.fig, self.ax = plt.subplots(3, 1, sharex=True)
+        self.fig, self.ax = plt.subplots(3, 1, sharex=True)
 
 
     def initialise_debug_plot(self):
         """Create figure object used in debug visualization."""
 
-        if self.args['debug']:
-            self.dfig, self.dax = plt.subplots(4, 1, sharex=False)
+        self.dfig, self.dax = plt.subplots(4, 1, sharex=False)
 
 
     def __spawn_devices(self):

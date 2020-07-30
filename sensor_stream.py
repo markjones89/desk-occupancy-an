@@ -14,9 +14,9 @@ import occupancy.helpers as helpers
 from occupancy.director  import Director
 
 # Fill in from the Service Account and Project:
-username   = "SERVICE_ACCOUNT_KEY"       # this is the key
-password   = "SERVICE_ACCOUT_SECRET"     # this is the secret
-project_id = "PROJECT_ID"                # this is the project id
+username="brn1e6r24te000b24bp0"             # this is the key
+password="34fc21309a8e462cb491a0d7610ea489" # this is the secret
+project_id="brn0ti14jplfqcpojb60"            # this is the project id
 
 # set url base
 api_url_base  = "https://api.disruptive-technologies.com/v2"
@@ -60,8 +60,11 @@ def get_event_history():
             event_listing = requests.get(event_list_url, auth=(username, password), params=event_params)
             event_json = event_listing.json()
     
-            event_params['page_token'] = event_json['nextPageToken']
-            events += event_json['events']
+            try:
+                event_params['page_token'] = event_json['nextPageToken']
+                events += event_json['events']
+            except KeyError:
+                helpers.print_error('Page token lost. Please try again.', terminate=True)
     
             if event_params['page_token'] is not '':
                 print('\t-- paging')
@@ -145,9 +148,11 @@ def event_history_stream():
     if args['plot']:
         print('\nClose the blocking plot to start stream.')
         print('A new non-blocking plot will appear for stream.')
+        d.initialise_plot()
         d.plot_progress(blocking=True)
     # plot debug
     elif args['debug']:
+        d.initialise_debug_plot()
         d.plot_debug()
 
 
