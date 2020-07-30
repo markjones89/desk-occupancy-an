@@ -41,4 +41,6 @@ optional arguments:
   --debug       Visualise algorithm operation.
 ```
 
+Note: When using the *--starttime* argument, if many sensors exist in the project, the paging process might take several minutes.
+
 
