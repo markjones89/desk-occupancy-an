@@ -1,4 +1,4 @@
-# Desk Occupancy Stream
+# Desk Occupancy
 
 ## What am I?
 This repository contains the example code talked about in [this application note (LINK PENDING)](https://www.disruptive-technologies.com/) proposing a method of using the Disruptive Technologies (DT) Temperature Sensor for desk occupancy tracking. Written in Python 3, it implements the DT Developer API to communicate with a DT Studio project and its sensors. By calling sensor_stream.py, an estimate of desk occupancy will be calculated for previous history data and/or a live stream of datapoints from the moment of execution.
@@ -41,6 +41,6 @@ optional arguments:
   --debug       Visualise algorithm operation.
 ```
 
-Note: When using the *--starttime* argument, if many sensors exist in the project, the paging process might take several minutes.
+Note: When using the *--starttime* argument for a date far back in time, if many sensors exist in the project, the paging process might take several minutes.
 
 
