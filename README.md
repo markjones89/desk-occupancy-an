@@ -27,7 +27,7 @@ project_id = "PROJECT_ID"                # this is the project id
 ```
 
 ## Usage
-Running *python3 sensor_stream.py* will start streaming data from the sensors in your project for which desk occupancy will be estimated for either historic data using *--timedelta* flag, a stream using *--stream* flag or both. Provide the *--plot* flag to visualise the results. 
+Running *python3 sensor_stream.py* will start streaming data from the sensors in your project for which desk occupancy will be estimated for either historic data using *--starttime* flag, a stream, or both. Provide the *--plot* flag to visualise the results. 
 ```
 usage: sensor_stream.py [-h] [--starttime] [--endtime] [--plot] [--debug]
 
