@@ -23,13 +23,19 @@ api_url_base  = "https://api.disruptive-technologies.com/v2"
 
 
 def json_sort_key(json):
-    """Return the event update time converted to unixtime.
+    """
+    Return the event update time converted to unixtime.
 
-    Parameters:
-        json -- Event data json.
+    Parameters
+    ----------
+    json : dictionary
+        Event data json imported as dictionary.
 
-    Returns:
-        unixtime -- Event data update time converted to unixtime.
+    Returns
+    -------
+    unixtime : int
+        Event data update time converted to unixtime.
+
     """
 
     timestamp = json['data']['temperature']['updateTime']
@@ -38,6 +44,21 @@ def json_sort_key(json):
 
 
 def get_event_history():
+    """
+    Get events in history from DT Studio project.
+
+    Returns
+    -------
+    events : list
+        List of historic events jsons.
+
+    Notes
+    -----
+    The paging process has been known to fail when certain VPNs are enabled.
+    Try disabling VPN if page token is continously lost.
+
+    """
+
     # initialise empty event list
     events = []
 
@@ -76,10 +97,16 @@ def get_event_history():
 
 
 def parse_arguments():
-    """Parse for command line arguments.
+    """
+    Parse for command line arguments.
 
-    Returns:
-        arguments -- Dictionary of arguments.
+    Returns
+    -------
+    arguments : dictionary
+        Dictionary of arguments and their values added by parses.
+    history : boolean
+        Whether or not historic event data should be fetched from project.
+
     """
 
     # create parser object
@@ -109,10 +136,14 @@ def parse_arguments():
 
 
 def get_devices():
-    """Get list of devices in project.
+    """
+    Get list of devices in project.
 
-    returns:
-        devices -- list of devices jsons.
+    Returns
+    -------
+    devices : list
+        List of dictionaries containing information about devices in project.
+
     """
 
     # format the url
@@ -132,7 +163,10 @@ def get_devices():
 
 
 def event_history_stream():  
-    """Iterate through and estimate occupancy on event history."""
+    """
+    Iterate through and estimate occupancy on event history.
+
+    """
 
     # get list of events
     events = get_event_history()
@@ -157,10 +191,19 @@ def event_history_stream():
 
 
 def stream(n_reconnects=5):
-    """Listen for new streaming events.
+    """
+    Listen for new streaming events.
 
-    parameters:
-        n_reconnects -- Maximum reconnects on connection loss.
+    Parameters
+    ----------
+    n_reconnects : int
+        Maximum number of reconnects on connection loss.
+
+    Notes
+    -----
+    The listening process has been known to fail when certain VPNs are enabled.
+    Try disabling VPN if exceptions are thrown often.
+
     """
 
     # cout
