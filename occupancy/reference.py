@@ -12,6 +12,7 @@ class Reference():
     Keeps track of all reference sensors in project.
     When event_data json is received, calculate latest reference value as
     the average of all reference sensors.
+
     """
 
     def __init__(self, args):
@@ -29,14 +30,21 @@ class Reference():
         self.temperature = []
         self.latest_values = {}
 
-    def add_device(self, device, device_id):
-        """Add new device from which the reference value is sourced.
 
-        Parameters:
-            device    -- Device information in json format.
-            device_id -- Device identifier.
+    def add_device(self, device, device_id):
+        """
+        Add new device from which the reference value is sourced.
+
+        Parameters
+        ----------
+        device : dictionary
+            Device information json in dictionary format.
+        device_id : str
+            Device identifier.
+
         """
 
+        # add new device to self
         self.devices[device_id] = device
         self.n_devices += 1
 
@@ -48,11 +56,16 @@ class Reference():
 
 
     def new_event_data(self, event_data, device_id):
-        """Receive new event data json from Director and update reference value.
+        """
+        Receive new event data json from Director and update reference value.
 
-        Parameters:
-            event_data -- Data json containing new event data.
-            device_id  -- Identifier of source device.
+        Parameters
+        ----------
+        event_data : dictionary
+            Data json containing new event data.
+        device_id : str
+            Identifier of source device.
+
         """
 
         # isolate timestamp and temperature value
