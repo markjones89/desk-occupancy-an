@@ -53,6 +53,17 @@ def get_devices(project_id, username, password, api_url_base):
     """
     Get list of devices in project.
 
+    Parameters
+    ----------
+    project_id : str
+        DT Studio project identifier.
+    username : str
+        Service account key.
+    password : str
+        Service account secret.
+    api_url_base : str
+        Base API url.
+
     Returns
     -------
     devices : list
@@ -79,6 +90,21 @@ def get_devices(project_id, username, password, api_url_base):
 def get_event_history(devices, project_id, username, password, event_params, api_url_base):
     """
     Get events in history from DT Studio project.
+
+    Parameters
+    ----------
+    devices : list
+        List of devices dictionaries.
+    project_id : str
+        DT Studio project identifier.
+    username : str
+        Service account key.
+    password : str
+        Service account secret.
+    event_params : dictionary
+        Filters used when fetching events from project.
+    api_url_base : str
+        Base API url.
 
     Returns
     -------
@@ -133,6 +159,28 @@ def event_history_stream(d, devices, args, project_id, username, password, event
     """
     Iterate through and estimate occupancy on event history.
 
+    Parameters
+    ----------
+    d : object
+        Director object instance.
+    devices : list
+        List of devices dictionaries.
+    args : dictionary
+        Dictionary of system arguments and their parsed values.
+    project_id : str
+        DT Studio project identifier.
+    username : str
+        Service account key.
+    password : str
+        Service account secret.
+    event_params : dictionary
+        Filters used when fetching events from project.
+    api_url_base : str
+        Base API url.
+
+    Returns
+    -------
+
     """
 
     # get list of events
@@ -165,6 +213,16 @@ def stream(d, args, username, password, devices_stream_url, stream_params, n_rec
 
     Parameters
     ----------
+    d : object
+        Director object instance.
+    args : dictionary
+        Dictionary of system arguments and their parsed values.
+    username : str
+        Service account key.
+    password : str
+        Service account secret.
+    stream_params : dictionary
+        Filters used when streaming events from project.
     n_reconnects : int
         Maximum number of reconnects on connection loss.
 
@@ -218,3 +276,4 @@ def stream(d, args, username, password, devices_stream_url, stream_params, n_rec
         
         # wait 1s before attempting to reconnect
         time.sleep(1)
+
