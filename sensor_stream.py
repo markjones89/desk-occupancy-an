@@ -104,7 +104,7 @@ def parse_arguments():
     -------
     arguments : dictionary
         Dictionary of arguments and their values added by parses.
-    history : boolean
+    history : bool
         Whether or not historic event data should be fetched from project.
 
     """

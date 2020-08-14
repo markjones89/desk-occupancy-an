@@ -4,15 +4,22 @@ import argparse
 import numpy  as np
 import pandas as pd
 
+
 def convert_event_data_timestamp(ts):
-    """Convert the default event_data timestamp format to Pandas and unixtime format.
+    """
+    Convert the default event_data timestamp format to Pandas and unixtime format.
 
-    Parameters:
-        ts -- event_data timestamp format
+    Parameters
+    ----------
+    ts : str
+        UTC timestamp in custom API event data format.
 
-    Returns:
-        timestamp -- Pandas Timestamp object format.
-        unixtime  -- Integer number of seconds since 1 January 1970.
+    Returns
+    -------
+    timestamp : datetime
+        Pandas Timestamp object format.
+    unixtime : int
+        Integer number of seconds since 1 January 1970.
 
     """
 
@@ -23,24 +30,34 @@ def convert_event_data_timestamp(ts):
 
 
 def temperature_roc_per_minute(dt, dy):
-    """Convert a delta time and delta temperature to rate of change in deg/min.
+    """
+    Convert a delta time and delta temperature to rate of change in deg/min.
 
-    Parameters:
-        dt -- Change in time.
-        dy -- Change in temperature.
+    Parameters
+    ----------
+    dt : int
+        Delta unixtime.
+    dy : int
+        Delta temperature.
 
-    Returns:
+    Returns
+    -------
+    return : float
         Positive rate of change in deg/min.
+
     """
 
     return max(0, (dy / dt) * 60)
 
 
 def print_error(text, terminate=True):
-    """Print an error message and terminate as desired.
+    """
+    Print an error message and terminate as desired.
 
-    Parameters:
-        terminate -- Terminate execution if True.
+    Parameters
+    ----------
+    terminate : bool
+        Terminate execution if True.
     """
 
     print('ERROR: {}'.format(text))
@@ -48,18 +65,25 @@ def print_error(text, terminate=True):
         sys.exit()
 
 
-def loop_progress(i_track, i, N_max, N_steps, name=None, acronym=' '):
-    """ print progress to console
+def loop_progress(i_track, i, n_max, n_steps, name=None, acronym=' '):
+    """
+    Print loop progress to console.
 
-    arguments:
-    i_track:    tracks how far the progress has come:
-    i:          what the current index is.
-    N_max:      the maximum value which indicates progress done.
-    N_steps:    how many steps which are counted.
+    Parameters
+    ----------
+    i_track : int
+        Tracks how far the progress has come:
+    i : int
+        Current index in loop.
+    n_max : int
+        Maximum value which indicates progress done.
+    n_steps : int
+        Number of steps to be counted.
+
     """
 
     # number of indices in each progress element
-    part = N_max / N_steps
+    part = n_max / n_steps
 
     if i_track == 0:
         # print empty bar
@@ -68,14 +92,14 @@ def loop_progress(i_track, i, N_max, N_steps, name=None, acronym=' '):
             print('    └── Progress:')
         else:
             print('    └── {}:'.format(name))
-        print('        ├── [ ' + (N_steps-1)*'-' + ' ] ' + acronym)
+        print('        ├── [ ' + (n_steps-1)*'-' + ' ] ' + acronym)
         i_track = 1
     elif i > i_track + part:
         # update tracker
         i_track = i_track + part
 
         # print bar
-        print('        ├── [ ' + int(i_track/part)*'#' + (N_steps - int(i_track/part) - 1)*'-' + ' ] ' + acronym)
+        print('        ├── [ ' + int(i_track/part)*'#' + (n_steps - int(i_track/part) - 1)*'-' + ' ] ' + acronym)
 
     # return tracker
     return i_track
