@@ -104,3 +104,24 @@ def loop_progress(i_track, i, n_max, n_steps, name=None, acronym=' '):
     # return tracker
     return i_track
 
+
+def json_sort_key(json):
+    """
+    Return the event update time converted to unixtime.
+
+    Parameters
+    ----------
+    json : dictionary
+        Event data json imported as dictionary.
+
+    Returns
+    -------
+    unixtime : int
+        Event data update time converted to unixtime.
+
+    """
+
+    timestamp = json['data']['temperature']['updateTime']
+    _, unixtime = convert_event_data_timestamp(timestamp)
+    return unixtime
+
