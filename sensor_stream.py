@@ -4,9 +4,9 @@ from occupancy.director import Director
 
 
 # Fill in from the Service Account and Project:
-username="brn1e6r24te000b24bp0"             # this is the key
-password="34fc21309a8e462cb491a0d7610ea489" # this is the secret
-project_id="brn0ti14jplfqcpojb60"            # this is the project id
+username   = "SERVICE_ACCOUNT_KEY"       # this is the key
+password   = "SERVICE_ACCOUT_SECRET"     # this is the secret
+project_id = "PROJECT_ID"                # this is the project id
 
 # url base and endpoint
 api_url_base  = "https://api.disruptive-technologies.com/v2"
