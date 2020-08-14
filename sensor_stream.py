@@ -1,6 +1,3 @@
-# packages
-import sys
-
 # project
 import occupancy.interface as interface
 from occupancy.director import Director
