@@ -33,9 +33,9 @@ class Desk():
         self.dsl_thrs    = []   # downslope threshold for detecting occupancy end
 
         # variables
-        self.state_start_index = 0 
-        self.state_flag        = False
-        self.state_swapped     = False
+        self.state_start_index = 0     # index for which the state flag previously changed from 0 to 1
+        self.state_flag        = False # set 1 for occupancy and 0 for vacancy
+        self.state_swapped     = False # set true if state swapped on current iteration
 
 
     def __update_roc_threshold(self, prev_thrs_value, current_roc_value):
