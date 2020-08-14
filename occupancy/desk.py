@@ -13,6 +13,7 @@ class Desk():
     One Desk class for each desk sensor in project.
     It keeps track of the desk occupancy algorithm state.
     When event_data json is received, iterate algorithm one sample.
+
     """
 
     def __init__(self, device, device_id, args):
@@ -38,14 +39,21 @@ class Desk():
 
 
     def __update_roc_threshold(self, prev_thrs_value, current_roc_value):
-        """Increase- and decrease ROC threshold dynamically by current ROC value.
+        """
+        Increase and decrease ROC threshold dynamically by current ROC value.
 
-        Parameters:
-            prev_thrs_value   -- Previous ROC threshold value.
-            current_roc_value -- The ROC value calculated just before this function were called.
+        Parameters
+        ----------
+        prev_thrs_value : float
+            Previous ROC threshold value.
+        current_roc_value : float
+            The ROC value calculated just before this function were called.
 
-        Returns:
-            new_thrs_value -- Updated ROC threshold value.
+        Returns
+        -------
+        new_thrs_value : float
+            Updated ROC threshold value.
+
         """
         
         # time-based increase
@@ -55,12 +63,57 @@ class Desk():
         return new_thrs_value
 
 
-    def new_event_data(self, event_data, latest_reference):
-        """Receive new event data json from Director and iterate estimation algorithm one step.
+    def __iterate_core(self):
+        """
+        Iterate occupancy estimation algorithm one sample ahead.
+        This entails calculating rate of change (ROC), thresholds and tracking
+        the current boolean state representing occupancy.
 
-        Parameters:
-            event_data       -- Data json containing new event data.
-            latest_reference -- The most recent reference temperature value. (0 if no reference)
+        """
+        
+        # get seconds since last sample
+        dt = self.unixtime[-1] - self.unixtime[-2]
+
+        # calculate rate of change in deg/min from last sample to now
+        self.roc[-1] = helpers.temperature_roc_per_minute(dt, self.diff[-1] - self.diff[-2])
+
+        # update dynamic roc threshold
+        self.roc_thrs[-1] = self.__update_roc_threshold(self.roc_thrs[-2], self.roc[-1])
+
+        # update state flag
+        if not self.state_flag:
+            # check wether or not roc_thrs has been passed
+            if self.roc[-1] >= self.roc_thrs[-1]:
+                self.state[-1] = 1
+                self.state_flag = True
+                self.state_start_index = len(self.state)-1
+
+        else:
+            # check wether or not temperature is below threshold
+            if self.diff[-1] < self.dsl_thrs[-2]:
+                self.state_flag = False
+            else:
+                self.state[-1] = 1
+        
+                # update temperature threshold
+                self.dsl_thrs[-1] = np.mean(self.diff[self.state_start_index:])
+        
+        # reset state swapped
+        self.state_swapped = False
+
+
+    def new_event_data(self, event_data, latest_reference):
+        """
+        Receive new event data json from Director and iterate estimation algorithm one step.
+
+        Parameters
+        ----------
+        event_data : dictionary
+            Event data json in dictionary form containing new event data.
+        latest_reference : float
+            The most recent reference temperature value.
+            Is 0 if no reference is yet found.
+
         """
 
         # isolate timestamp and temperature value
@@ -94,38 +147,4 @@ class Desk():
 
         # iterate algorithm for last sample
         self.__iterate_core()
-
-
-    def __iterate_core(self):
-        """Iterate occupancy estimation algorithm one sample ahead."""
-        
-        # get seconds since last sample
-        dt = self.unixtime[-1] - self.unixtime[-2]
-
-        # calculate rate of change in deg/min from last sample to now
-        self.roc[-1] = helpers.temperature_roc_per_minute(dt, self.diff[-1] - self.diff[-2])
-
-        # update dynamic roc threshold
-        self.roc_thrs[-1] = self.__update_roc_threshold(self.roc_thrs[-2], self.roc[-1])
-
-        # update state flag
-        if not self.state_flag:
-            # check wether or not roc_thrs has been passed
-            if self.roc[-1] >= self.roc_thrs[-1]:
-                self.state[-1] = 1
-                self.state_flag = True
-                self.state_start_index = len(self.state)-1
-
-        else:
-            # check wether or not temperature is below threshold
-            if self.diff[-1] < self.dsl_thrs[-2]:
-                self.state_flag = False
-            else:
-                self.state[-1] = 1
-        
-                # update temperature threshold
-                self.dsl_thrs[-1] = np.mean(self.diff[self.state_start_index:])
-        
-        # reset state swapped
-        self.state_swapped = False
 
