@@ -269,10 +269,10 @@ def stream(d, args, username, password, devices_stream_url, stream_params, n_rec
         # Note: Some VPNs seem to cause quite a lot of packet corruption (?)
         except requests.exceptions.ConnectionError:
             nth_reconnect += 1
-            print('Connection lost, reconnection attempt {}/{}'.format(nth_retry, MAX_RETRIES))
+            print('Connection lost, reconnection attempt {}/{}'.format(nth_reconnect, MAX_RETRIES))
         except requests.exceptions.ChunkedEncodingError:
             nth_reconnect += 1
-            print('An error occured, reconnection attempt {}/{}'.format(nth_retry, MAX_RETRIES))
+            print('An error occured, reconnection attempt {}/{}'.format(nth_reconnect, MAX_RETRIES))
         
         # wait 1s before attempting to reconnect
         time.sleep(1)
