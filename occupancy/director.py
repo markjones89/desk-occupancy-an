@@ -56,6 +56,9 @@ class Director():
         # spawn devices instances
         self.__spawn_devices()
 
+        # to console
+        self.print_devices_information()
+
 
     def __parse_sysargs(self):
         """
@@ -88,6 +91,11 @@ class Director():
 
 
     def __set_filters(self):
+        """
+        Set filters for data fetched through API.
+
+        """
+
         # historic events
         self.history_params = {
             'page_size': 1000,
@@ -103,6 +111,11 @@ class Director():
 
 
     def __fetch_project_devices(self):
+        """
+        Fetch information about all devices in project.
+
+        """
+
         # request list
         devices_list_url = "{}/projects/{}/devices".format(self.api_url_base,  self.project_id)
         device_listing = requests.get(devices_list_url, auth=(self.username, self.password))
@@ -253,6 +266,11 @@ class Director():
 
 
     def __fetch_event_history(self):
+        """
+        For each sensor in project, request all events since --starttime from API.
+
+        """
+
         # initialise empty event list
         self.event_history = []
 
@@ -288,7 +306,45 @@ class Director():
         self.event_history.sort(key=hlp.json_sort_key, reverse=False)
 
 
+    def __new_event_data(self, event_data, cout=True):
+        """
+        Receive new event_data json and pass it along to the correct device object.
+
+        Parameters
+        ----------
+        event_data : dictionary
+            Data json containing new event data.
+        cout : bool
+            Will print event information to console if True.
+
+        """
+
+        # get id of source sensor
+        source_id = os.path.basename(event_data['targetName'])
+
+        # verify temperature event
+        if 'temperature' in event_data['data'].keys():
+            # check if source device is known
+            if source_id in self.desks.keys():
+                # serve event to desk
+                self.desks[source_id].new_event_data(event_data, self.reference.latest_value)
+                if cout: print('-- {:<30}{}'.format(source_id, 'desk'))
+
+            elif source_id in self.reference.devices.keys():
+                # serve new temperature value to reference
+                self.reference.new_event_data(event_data, source_id)
+                if cout: print('-- {:<30}{}'.format(source_id, 'reference'))
+
+            # update occupancy stats
+            self.__occupancy(event_data['data']['temperature']['updateTime'])
+
+
     def event_history(self):
+        """
+        Iterate through and calculate occupancy for event history.
+
+        """
+
         # do nothing if starttime not given
         if not self.fetch_history:
             return
@@ -316,6 +372,16 @@ class Director():
 
 
     def event_stream(self, n_reconnects=5):
+        """
+        Estimate occupancy on realtime stream data from sensors.
+
+        Parameters
+        ----------
+        n_reconnects : int
+            Number of reconnection attempts at disconnect.
+
+        """
+
         # cout
         print("Listening for events... (press CTRL-C to abort)")
     
@@ -374,37 +440,6 @@ class Director():
         for device in self.reference.devices:
             print('-- {:<30}{}'.format(device, 'reference'))
         print()
-
-
-    def __new_event_data(self, event_data, cout=True):
-        """
-        Receive new event_data json and pass it along to the correct device object.
-
-        Parameters
-        ----------
-        event_data : dictionary
-            Data json containing new event data.
-
-        """
-
-        # get id of source sensor
-        source_id = os.path.basename(event_data['targetName'])
-
-        # verify temperature event
-        if 'temperature' in event_data['data'].keys():
-            # check if source device is known
-            if source_id in self.desks.keys():
-                # serve event to desk
-                self.desks[source_id].new_event_data(event_data, self.reference.latest_value)
-                if cout: print('-- {:<30}{}'.format(source_id, 'desk'))
-
-            elif source_id in self.reference.devices.keys():
-                # serve new temperature value to reference
-                self.reference.new_event_data(event_data, source_id)
-                if cout: print('-- {:<30}{}'.format(source_id, 'reference'))
-
-            # update occupancy stats
-            self.__occupancy(event_data['data']['temperature']['updateTime'])
 
 
     def initialise_plot(self):
