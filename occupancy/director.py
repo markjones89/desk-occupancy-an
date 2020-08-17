@@ -366,7 +366,7 @@ class Director():
             self.initialise_plot()
             self.plot_progress(blocking=True)
         # plot debug
-        elif self.args['debug']:
+        if self.args['debug']:
             self.plot_debug()
 
 
