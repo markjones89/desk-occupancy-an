@@ -5,8 +5,8 @@ import pandas            as pd
 import matplotlib.pyplot as plt
 
 # project
-from occupancy                   import helpers
-from occupancy.config.parameters import params
+from occupancy         import helpers
+from config.parameters import params
 
 class Desk():
     """

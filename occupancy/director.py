@@ -13,11 +13,11 @@ import pandas            as pd
 import matplotlib.pyplot as plt
 
 # project
-import occupancy.helpers         as hlp
-import occupancy.config.styling  as stl
-from occupancy.desk              import Desk
-from occupancy.reference         import Reference
-from occupancy.config.parameters import params
+import occupancy.helpers as hlp
+import config.styling    as stl
+from occupancy.desk      import Desk
+from occupancy.reference import Reference
+from config.parameters   import params
 
 
 class Director():
