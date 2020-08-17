@@ -1,13 +1,19 @@
 # packages
 import os
 import sys
+import json
+import time
 import pprint
+import requests
+import argparse
+import datetime
+import sseclient
 import numpy             as np
 import pandas            as pd
 import matplotlib.pyplot as plt
 
 # project
-import occupancy.helpers         as helpers
+import occupancy.helpers         as hlp
 import occupancy.config.styling  as stl
 from occupancy.desk              import Desk
 from occupancy.reference         import Reference
@@ -22,22 +28,92 @@ class Director():
 
     """
 
-    def __init__(self, devices, args):
+    def __init__(self, username, password, project_id, api_url_base):
         # give to self
-        self.args    = args
-        self.devices = devices
+        self.username     = username
+        self.password     = password
+        self.project_id   = project_id
+        self.api_url_base = api_url_base
 
-        # occupancy list
+        # occupancy lists
         self.hourly_occupancy_timestamp  = []
         self.hourly_occupancy_percentage = []
         self.daily_occupancy_timestamp   = []
         self.daily_occupancy_percentage  = []
 
-        # initialise Desk and Reference objects from devices
+        # set stream endpoint
+        self.stream_endpoint = "{}/projects/{}/devices:stream".format(self.api_url_base, self.project_id)
+
+        # parse system arguments
+        self.__parse_sysargs()
+
+        # set filters for fetching data
+        self.__set_filters()
+
+        # fetch list of devices in project
+        self.__fetch_project_devices()
+
+        # spawn devices instances
         self.__spawn_devices()
 
-        # print some information
-        self.print_devices_information()
+
+    def __parse_sysargs(self):
+        """
+        Parse for command line arguments.
+
+        """
+
+        # create parser object
+        parser = argparse.ArgumentParser(description='Desk Occupancy Estimation on Stream and Event History.')
+
+        # get UTC time now
+        now = (datetime.datetime.utcnow().replace(microsecond=0)).isoformat() + 'Z'
+
+        # general arguments
+        parser.add_argument('--starttime', metavar='', help='Event history UTC starttime [YYYY-MM-DDTHH:MM:SSZ].', required=False, default=now)
+        parser.add_argument('--endtime',   metavar='', help='Event history UTC endtime [YYYY-MM-DDTHH:MM:SSZ].',   required=False, default=now)
+
+        # boolean flags
+        parser.add_argument('--plot',   action='store_true', help='Plot the estimated desk occupancy.')
+        parser.add_argument('--debug',  action='store_true', help='Visualise algorithm operation.')
+
+        # convert to dictionary
+        self.args = vars(parser.parse_args())
+
+        # set history flag
+        if now == self.args['starttime']:
+            self.fetch_history = False
+        else:
+            self.fetch_history = True
+
+
+    def __set_filters(self):
+        # historic events
+        self.history_params = {
+            'page_size': 1000,
+            'start_time': self.args['starttime'],
+            'end_time': self.args['endtime'],
+            'event_types': ['temperature']
+        }
+
+        # stream events
+        self.stream_params = {
+            'event_types': ['temperature']
+        }
+
+
+    def __fetch_project_devices(self):
+        # request list
+        devices_list_url = "{}/projects/{}/devices".format(self.api_url_base,  self.project_id)
+        device_listing = requests.get(devices_list_url, auth=(self.username, self.password))
+        
+        # remove fluff
+        try:
+            self.devices = device_listing.json()['devices']
+        except KeyError as e:
+            # an error here probably means connection issues
+            print(e)
+            hlp.print_error('Could not fetch devices.', terminate=True)
 
 
     def __spawn_devices(self):
@@ -79,7 +155,7 @@ class Director():
         """
 
         # get current timestamp
-        timestamp, _ = helpers.convert_event_data_timestamp(current_timestamp)
+        timestamp, _ = hlp.convert_event_data_timestamp(current_timestamp)
 
         # round timestamp to last hour and day
         timestamp_hour = timestamp.floor('H')
@@ -176,6 +252,115 @@ class Director():
         self.daily_occupancy_percentage[-1] = np.median(median_percentage)
 
 
+    def __fetch_event_history(self):
+        # initialise empty event list
+        self.event_history = []
+
+        # iterate devices
+        for device in self.devices:
+            # isolate device identifier
+            device_id = os.path.basename(device['name'])
+        
+            # some printing
+            print('-- Getting event history for {}'.format(device_id))
+        
+            # initialise next page token
+            self.history_params['page_token'] = None
+        
+            # set endpoints for event history
+            event_list_url = "{}/projects/{}/devices/{}/events".format(self.api_url_base, self.project_id, device_id)
+        
+            # perform paging
+            while self.history_params['page_token'] != '':
+                event_listing = requests.get(event_list_url, auth=(self.username, self.password), params=self.history_params)
+                event_json = event_listing.json()
+        
+                try:
+                    self.history_params['page_token'] = event_json['nextPageToken']
+                    self.event_history += event_json['events']
+                except KeyError:
+                    hlp.print_error('Page token lost. Please try again.', terminate=True)
+        
+                if self.history_params['page_token'] is not '':
+                    print('\t-- paging')
+        
+        # sort event history in time
+        self.event_history.sort(key=hlp.json_sort_key, reverse=False)
+
+
+    def event_history(self):
+        # do nothing if starttime not given
+        if not self.fetch_history:
+            return
+
+        # get list of hsitoric events
+        self.__fetch_event_history()
+        
+        # estimate occupancy for history 
+        cc = 0
+        for i, event_data in enumerate(self.event_history):
+            cc = hlp.loop_progress(cc, i, len(self.event_history), 25, name='event history')
+            # serve event to director
+            self.__new_event_data(event_data, cout=False)
+        
+        # initialise plot
+        if self.args['plot']:
+            print('\nClose the blocking plot to start stream.')
+            print('A new non-blocking plot will appear for stream.')
+            self.initialise_plot()
+            self.plot_progress(blocking=True)
+        # plot debug
+        elif self.args['debug']:
+            self.initialise_debug_plot()
+            self.plot_debug()
+
+
+    def event_stream(self, n_reconnects=5):
+        # cout
+        print("Listening for events... (press CTRL-C to abort)")
+    
+        # reinitialise plot
+        if self.args['plot']:
+            self.initialise_plot()
+            self.plot_progress(blocking=False)
+    
+        # loop indefinetly
+        nth_reconnect = 0
+        while nth_reconnect < n_reconnects:
+            try:
+                # reset reconnect counter
+                nth_reconnect = 0
+        
+                # get response
+                response = requests.get(self.stream_endpoint, auth=(self.username, self.password), headers={'accept':'text/event-stream'}, stream=True, params=self.stream_params)
+                client = sseclient.SSEClient(response)
+        
+                # listen for events
+                print('Connected.')
+                for event in client.events():
+                    # new data received
+                    event_data = json.loads(event.data)['result']['event']
+        
+                    # serve event to director
+                    self.__new_event_data(event_data)
+        
+                    # plot progress
+                    if self.args['plot']:
+                        self.plot_progress(blocking=False)
+            
+            # catch errors
+            # Note: Some VPNs seem to cause quite a lot of packet corruption (?)
+            except requests.exceptions.ConnectionError:
+                nth_reconnect += 1
+                print('Connection lost, reconnection attempt {}/{}'.format(nth_reconnect, n_reconnects))
+            except requests.exceptions.ChunkedEncodingError:
+                nth_reconnect += 1
+                print('An error occured, reconnection attempt {}/{}'.format(nth_reconnect, n_reconnects))
+            
+            # wait 1s before attempting to reconnect
+            time.sleep(1)
+
+
     def print_devices_information(self):
         """
         Print information about active devices in stream.
@@ -191,7 +376,7 @@ class Director():
         print()
 
 
-    def new_event_data(self, event_data, cout=True):
+    def __new_event_data(self, event_data, cout=True):
         """
         Receive new event_data json and pass it along to the correct device object.
 
