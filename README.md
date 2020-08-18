@@ -21,9 +21,9 @@ pip install -r requirements.txt
 
 Edit *sensor_stream.py* to provide the following authentication details of your project. Information about setting up your project for API authentication can be found in this [streaming API guide](https://support.disruptive-technologies.com/hc/en-us/articles/360012377939-Using-the-stream-API).
 ```python
-username   = "SERVICE_ACCOUNT_KEY"       # this is the key
-password   = "SERVICE_ACCOUT_SECRET"     # this is the secret
-project_id = "PROJECT_ID"                # this is the project id
+USERNAME   = "SERVICE_ACCOUNT_KEY"       # this is the key
+PASSWORD   = "SERVICE_ACCOUT_SECRET"     # this is the secret
+PROJECT_ID = "PROJECT_ID"                # this is the project id
 ```
 
 ## Usage
