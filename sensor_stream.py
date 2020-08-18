@@ -16,8 +16,8 @@ if __name__ == '__main__':
     d = Director(USERNAME, PASSWORD, PROJECT_ID, API_URL_BASE)
 
     # iterate historic events
-    d.event_history()
+    d.run_history()
 
     # stream realtime events
-    d.event_stream(n_reconnects=5)
+    d.run_stream(n_reconnects=5)
 
