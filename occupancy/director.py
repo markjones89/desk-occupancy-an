@@ -419,6 +419,10 @@ class Director():
             except requests.exceptions.ChunkedEncodingError:
                 nth_reconnect += 1
                 print('An error occured, reconnection attempt {}/{}'.format(nth_reconnect, n_reconnects))
+            except KeyError:
+                print('Error in event package. Skipping...')
+                print(event_data)
+                print()
             
             # wait 1s before attempting to reconnect
             time.sleep(1)
