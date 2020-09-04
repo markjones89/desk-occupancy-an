@@ -1,9 +1,7 @@
 # packages
 import os
-import sys
 import json
 import time
-import pprint
 import requests
 import argparse
 import datetime
@@ -299,7 +297,7 @@ class Director():
                     print(event_json)
                     hlp.print_error('Status Code: {}'.format(event_listing.status_code), terminate=True)
         
-                if self.history_params['page_token'] is not '':
+                if self.history_params['page_token'] != '':
                     print('\t-- paging')
         
         # sort event history in time

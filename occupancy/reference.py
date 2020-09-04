@@ -1,10 +1,6 @@
-# packages
-import sys
-import numpy  as np
-import pandas as pd
-
 # project
 from occupancy import helpers
+
 
 class Reference():
     """
