@@ -8,6 +8,7 @@ import datetime
 import sseclient
 import numpy             as np
 import pandas            as pd
+import matplotlib
 import matplotlib.pyplot as plt
 
 # project
@@ -16,6 +17,9 @@ import config.styling    as stl
 from occupancy.desk      import Desk
 from occupancy.reference import Reference
 from config.parameters   import params
+
+# force matplotlib TkAgg backend
+matplotlib.use('TkAgg')
 
 
 class Director():

@@ -54,8 +54,8 @@ class Desk():
         """
         
         # time-based increase
-        new_thrs_value = min(params['roc']['thrs_maxval'], prev_thrs_value + params['roc']['thrs_posdiff'])
-        new_thrs_value = max(params['roc']['thrs_minval'], new_thrs_value - current_roc_value * params['roc']['pulldown_modifier'])
+        new_thrs_value = min(params['roc']['gamma_max'], prev_thrs_value + params['roc']['beta'])
+        new_thrs_value = max(params['roc']['gamma_min'], new_thrs_value - current_roc_value * params['roc']['alpha'])
 
         return new_thrs_value
 
@@ -134,7 +134,7 @@ class Desk():
         # append one default value to supporting lists
         self.diff.append(self.temperature[-1] - latest_reference)
         self.roc.append(0)
-        self.roc_thrs.append(params['roc']['thrs_maxval'])
+        self.roc_thrs.append(params['roc']['gamma_max'])
         self.dsl_thrs.append(np.nan)
         self.state.append(0)
 
