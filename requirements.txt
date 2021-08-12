@@ -1,4 +1,0 @@
-pandas==1.0.3
-matplotlib==3.2.1
-requests==2.24.0
-sseclient-py==1.7
