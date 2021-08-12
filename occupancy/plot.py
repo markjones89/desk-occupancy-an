@@ -1,29 +1,26 @@
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.transforms as mtransforms
 
 
 def single(desk):
-    plt.figure()
-    trig = []
-    for i in range(desk.n_samples):
-        if desk.state_array[i] == 1:
-            trig.append(desk.celsius[i])
-        else:
-            trig.append(None)
-
-    k1 = plt.subplot(211)
-    k1.plot(desk.timestamps, desk.celsius, label='Raw Temperature')
-    k1.plot(desk.timestamps, trig, 'r', label='Occupied')
+    trig = np.array(desk.state_array)
+    _, ax = plt.subplots()
+    ax.plot(desk.timestamps, desk.celsius, label='Raw Temperature')
+    trans = mtransforms.blended_transform_factory(ax.transData, ax.transAxes)
+    ax.fill_between(
+        np.array(desk.timestamps),
+        0, 1,
+        where=trig,
+        transform=trans,
+        color='C0', alpha=0.25,
+        label='Occupied',
+    )
     plt.ylabel('Celsius')
-    plt.legend()
-    k2 = plt.subplot(212, sharex=k1)
-    k2.plot(desk.timestamps, desk.roc, '.-', label='ROC')
-    k2.axhline(0, color='k')
-    k2.axhline(desk.roc_upper_threshold, color='r', label='ROC Threshold')
     plt.xlabel('Timestamp')
-    plt.ylabel('Rate of Change')
     plt.legend()
-    plt.pause(0.001)
+    plt.show()
 
 
 def aggregated(desks):
@@ -55,10 +52,10 @@ def aggregated(desks):
     agg_d = aggregate_by(desks, 'D').shift(12, freq='H')
 
     plt.plot(agg_h, label='Hourly')
-    plt.plot(agg_d, 'o-', label='Daily')
+    plt.plot(agg_d, linewidth=3, label='Daily')
 
     plt.xlabel('Timestamp')
-    plt.ylabel('Percentage')
+    plt.ylabel('Occupancy [%]')
     plt.title('Occupancy')
     plt.legend()
     plt.show()

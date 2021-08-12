@@ -43,9 +43,10 @@ def main():
                 # Iterate progress bar.
                 bar.next()
 
-    # Plot results.
-    if args.plot_desks:
-        for d in desks:
-            oc.plot.single(desks[d])
+        # Plot desk results.
+        if args.plot_desks:
+            oc.plot.single(desks[device_id])
+
+    # Plot aggregated results.
     if args.plot_agg:
         oc.plot.aggregated(desks)
